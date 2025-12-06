@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import type { SubscriptionWithProduct } from '@/types/stripe';
+import type { SubscriptionWithProduct } from '@/types/lemonsqueezy';
 import { SubscriptionTier } from '@/lib/types';
 
 export interface UserSubscription {
@@ -8,8 +8,8 @@ export interface UserSubscription {
   current_period_start: string;
   current_period_end: string;
   cancel_at_period_end: boolean;
-  stripe_subscription_id: string | null;
-  stripe_customer_id: string | null;
+  lemonsqueezy_subscription_id: string | null;
+  lemonsqueezy_customer_id: string | null;
 }
 
 export interface Plan {
@@ -46,8 +46,8 @@ export async function getUserSubscription(userId: string): Promise<SubscriptionW
         current_period_start,
         current_period_end,
         cancel_at_period_end,
-        stripe_subscription_id,
-        stripe_customer_id,
+        lemonsqueezy_subscription_id,
+        lemonsqueezy_customer_id,
         product:products!inner (
           id,
           name,
@@ -98,8 +98,8 @@ export async function getUserSubscription(userId: string): Promise<SubscriptionW
         current_period_start: subscription.current_period_start,
         current_period_end: subscription.current_period_end,
         cancel_at_period_end: subscription.cancel_at_period_end,
-        stripe_subscription_id: subscription.stripe_subscription_id,
-        stripe_customer_id: subscription.stripe_customer_id,
+        lemonsqueezy_subscription_id: subscription.lemonsqueezy_subscription_id,
+        lemonsqueezy_customer_id: subscription.lemonsqueezy_customer_id,
       },
       plan: {
         id: product?.id,
@@ -241,14 +241,14 @@ export async function getAvailablePlans(): Promise<Plan[]> {
         id,
         name,
         description,
-        stripe_product_id,
+        lemonsqueezy_product_id,
         sort_order,
         prices (
           id,
           amount,
           currency,
           interval_type,
-          stripe_price_id
+          lemonsqueezy_variant_id
         ),
         features (
           feature_key,
@@ -281,7 +281,7 @@ export async function getAvailablePlans(): Promise<Plan[]> {
           amount: price?.amount || 0,
           currency: price?.currency || 'usd',
           interval_type: price?.interval_type || 'month',
-          stripe_price_id: price?.stripe_price_id
+          lemonsqueezy_variant_id: price?.lemonsqueezy_variant_id
         },
         features,
         tier: getTierFromName(product.name)
