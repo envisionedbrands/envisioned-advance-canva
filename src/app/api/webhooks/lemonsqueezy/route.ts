@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const event: LemonSqueezyWebhookEvent = JSON.parse(body);
     const eventName = event.meta.event_name;
-    const subscriptionData = event.data.attributes;
+    const subscriptionData = event.data.attributes as unknown as WebhookSubscriptionData;
 
     console.log('LemonSqueezy webhook event:', eventName);
 
@@ -86,7 +86,26 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleSubscriptionCreated(supabase: any, data: any) {
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+interface WebhookSubscriptionData {
+  id: string;
+  customer_id: string;
+  status: string;
+  product_id: string;
+  variant_id: string;
+  created_at: string;
+  renews_at: string;
+  cancelled: boolean;
+  custom_data?: {
+    user_id?: string;
+  };
+}
+
+async function handleSubscriptionCreated(
+  supabase: SupabaseClient,
+  data: WebhookSubscriptionData
+) {
   const customData = data.custom_data || {};
   const userId = customData.user_id;
 
@@ -112,7 +131,10 @@ async function handleSubscriptionCreated(supabase: any, data: any) {
   }
 }
 
-async function handleSubscriptionUpdated(supabase: any, data: any) {
+async function handleSubscriptionUpdated(
+  supabase: SupabaseClient,
+  data: WebhookSubscriptionData
+) {
   const { error } = await supabase
     .from('subscriptions')
     .update({
@@ -128,7 +150,10 @@ async function handleSubscriptionUpdated(supabase: any, data: any) {
   }
 }
 
-async function handleSubscriptionCancelled(supabase: any, data: any) {
+async function handleSubscriptionCancelled(
+  supabase: SupabaseClient,
+  data: WebhookSubscriptionData
+) {
   const { error } = await supabase
     .from('subscriptions')
     .update({
@@ -144,7 +169,10 @@ async function handleSubscriptionCancelled(supabase: any, data: any) {
   }
 }
 
-async function handleSubscriptionResumed(supabase: any, data: any) {
+async function handleSubscriptionResumed(
+  supabase: SupabaseClient,
+  data: WebhookSubscriptionData
+) {
   const { error } = await supabase
     .from('subscriptions')
     .update({
@@ -159,7 +187,10 @@ async function handleSubscriptionResumed(supabase: any, data: any) {
   }
 }
 
-async function handlePaymentSuccess(supabase: any, data: any) {
+async function handlePaymentSuccess(
+  supabase: SupabaseClient,
+  data: WebhookSubscriptionData
+) {
   // Update subscription status to active
   const { error } = await supabase
     .from('subscriptions')
@@ -174,7 +205,10 @@ async function handlePaymentSuccess(supabase: any, data: any) {
   }
 }
 
-async function handlePaymentFailed(supabase: any, data: any) {
+async function handlePaymentFailed(
+  supabase: SupabaseClient,
+  data: WebhookSubscriptionData
+) {
   // Update subscription status to past_due
   const { error } = await supabase
     .from('subscriptions')

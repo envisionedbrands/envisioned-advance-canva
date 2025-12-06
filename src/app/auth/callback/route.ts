@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const next = requestUrl.searchParams.get('next') ?? '/dashboard'
   const origin = requestUrl.origin
   const cookieStore = await cookies()
 
@@ -26,20 +27,22 @@ export async function GET(request: Request) {
         },
       }
     )
-    
+
     try {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (error) {
         console.error('Error exchanging code for session:', error)
         return NextResponse.redirect(`${origin}/login?error=auth_callback_error`)
       }
+
+      // Redirect to the intended destination after successful OAuth
+      return NextResponse.redirect(`${origin}${next}`)
     } catch (error) {
       console.error('Error in OAuth callback:', error)
       return NextResponse.redirect(`${origin}/login?error=auth_callback_error`)
     }
   }
 
-  // Redirect to dashboard on success, or login if no code
-  const redirectTo = code ? '/dashboard' : '/login'
-  return NextResponse.redirect(`${origin}${redirectTo}`)
+  // If no code, redirect to login
+  return NextResponse.redirect(`${origin}/login`)
 }

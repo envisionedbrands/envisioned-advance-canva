@@ -11,6 +11,7 @@ import {
   type Subscription,
   type Product,
 } from '@lemonsqueezy/lemonsqueezy.js';
+import crypto from 'crypto';
 
 // Initialize LemonSqueezy with API key
 export function initializeLemonSqueezy() {
@@ -39,14 +40,10 @@ export async function createCheckoutSession({
   variantId,
   customerId,
   userEmail,
-  successUrl,
-  cancelUrl,
 }: {
   variantId: string;
   customerId?: string;
   userEmail?: string;
-  successUrl?: string;
-  cancelUrl?: string;
 }) {
   initializeLemonSqueezy();
 
@@ -149,7 +146,6 @@ export function verifyWebhookSignature(
   signature: string,
   secret: string
 ): boolean {
-  const crypto = require('crypto');
   const hmac = crypto.createHmac('sha256', secret);
   const digest = hmac.update(payload).digest('hex');
 
@@ -175,6 +171,12 @@ export function formatPrice(cents: number, currency: string = 'USD'): string {
 export async function getVariantByPriceId(priceId: string) {
   initializeLemonSqueezy();
 
-  const variants = await listVariants();
-  return variants.data?.find((v) => v.id === priceId);
+  const response = await listVariants();
+  const variantsData = response.data;
+
+  if (!variantsData || !Array.isArray(variantsData.data)) {
+    return null;
+  }
+
+  return variantsData.data.find((v) => v.id === priceId);
 }
