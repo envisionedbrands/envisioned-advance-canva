@@ -97,7 +97,7 @@ export default function NewBoardPage() {
               maxLength={500}
             />
             <p className="text-sm text-muted-foreground">
-              Add context about what you'll build on this board
+              Add context about what you&apos;ll build on this board
             </p>
           </div>
 
