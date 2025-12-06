@@ -23,7 +23,8 @@ import { SourceNode } from './nodes/source-node';
 import { InsightNode } from './nodes/insight-node';
 import { OutputNode } from './nodes/output-node';
 import { CanvasToolbar } from './toolbar/canvas-toolbar';
-import type { Board, CanvasNode, CanvasEdge, NodeType } from '@/types/canvas';
+import { NodeDetailPanel } from './panels/node-detail-panel';
+import type { Board, CanvasNode, CanvasEdge, NodeType, NodeData } from '@/types/canvas';
 
 const nodeTypes = {
   text: BaseNode,
@@ -69,7 +70,12 @@ function BoardCanvasInner({
     }))
   );
 
-  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  // Find the full node object for the selected node
+  const selectedNode = selectedNodeId
+    ? nodes.find((n) => n.id === selectedNodeId) || null
+    : null;
 
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -164,11 +170,51 @@ function BoardCanvasInner({
   );
 
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    setSelectedNode(node.id);
+    setSelectedNodeId(node.id);
   }, []);
 
   const handlePaneClick = useCallback(() => {
-    setSelectedNode(null);
+    setSelectedNodeId(null);
+  }, []);
+
+  const handleUpdateNode = useCallback(
+    async (nodeId: string, updates: Partial<NodeData>) => {
+      try {
+        // Optimistically update UI
+        setNodes((nds) =>
+          nds.map((node) =>
+            node.id === nodeId
+              ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    ...updates,
+                  },
+                }
+              : node
+          )
+        );
+
+        // Sync to backend
+        const response = await fetch(`/api/boards/${board.id}/nodes/${nodeId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: updates }),
+        });
+
+        if (!response.ok) {
+          console.error('Failed to update node');
+          // TODO: Revert optimistic update on error
+        }
+      } catch (error) {
+        console.error('Error updating node:', error);
+      }
+    },
+    [board.id]
+  );
+
+  const handleClosePanel = useCallback(() => {
+    setSelectedNodeId(null);
   }, []);
 
   return (
@@ -207,14 +253,12 @@ function BoardCanvasInner({
         </ReactFlow>
       </div>
 
-      {/* Node detail panel - will show when node is selected */}
-      {selectedNode && (
-        <div className="absolute right-0 top-0 h-full w-96 border-l bg-background p-6 shadow-lg">
-          <h3 className="mb-4 text-lg font-semibold">Node Details</h3>
-          <p className="text-sm text-muted-foreground">Node ID: {selectedNode}</p>
-          {/* TODO: Implement full detail panel */}
-        </div>
-      )}
+      {/* Node detail panel */}
+      <NodeDetailPanel
+        node={selectedNode}
+        onClose={handleClosePanel}
+        onUpdate={handleUpdateNode}
+      />
     </div>
   );
 }
