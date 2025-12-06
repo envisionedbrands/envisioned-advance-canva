@@ -94,7 +94,11 @@ export async function createBoard(
     throw new Error(`Failed to create board: ${error.message || error.code || 'Unknown error'}`);
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to create board: No data returned');
+  }
+
+  return data as Board;
 }
 
 /**
@@ -125,7 +129,11 @@ export async function updateBoard(
     throw new Error('Failed to update board');
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to update board: No data returned');
+  }
+
+  return data as Board;
 }
 
 /**
@@ -219,7 +227,11 @@ export async function createNode(input: CreateNodeInput): Promise<CanvasNode> {
     throw new Error('Failed to create node');
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to create node: No data returned');
+  }
+
+  return data as CanvasNode;
 }
 
 /**
@@ -252,7 +264,11 @@ export async function updateNode(
     throw new Error('Failed to update node');
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to update node: No data returned');
+  }
+
+  return data as CanvasNode;
 }
 
 /**
@@ -342,7 +358,11 @@ export async function createEdge(input: CreateEdgeInput): Promise<CanvasEdge> {
     throw new Error('Failed to create edge');
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to create edge: No data returned');
+  }
+
+  return data as CanvasEdge;
 }
 
 /**
