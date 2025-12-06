@@ -17,6 +17,7 @@ export default function BoardPage({
 
   useEffect(() => {
     fetchBoard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardId]);
 
   const fetchBoard = async () => {
@@ -62,7 +63,7 @@ export default function BoardPage({
         <div className="text-center">
           <h2 className="text-2xl font-bold">Board not found</h2>
           <p className="mt-2 text-muted-foreground">
-            The board you're looking for doesn't exist or you don't have access
+            The board you&apos;re looking for doesn&apos;t exist or you don&apos;t have access
             to it.
           </p>
         </div>
@@ -75,8 +76,6 @@ export default function BoardPage({
       board={board}
       initialNodes={nodes}
       initialEdges={edges}
-      onNodesChange={setNodes}
-      onEdgesChange={setEdges}
     />
   );
 }
