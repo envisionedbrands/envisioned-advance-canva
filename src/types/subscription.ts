@@ -25,7 +25,7 @@ export interface SubscriptionPlan {
   currency: string;
   interval: 'month' | 'year';
   features: PlanFeatures;
-  stripe_price_id?: string;
+  lemonsqueezy_variant_id?: string;
   popular?: boolean;
   description: string;
   trial_days?: number;
@@ -36,8 +36,8 @@ export interface UserSubscription {
   user_id: string;
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
-  stripe_subscription_id?: string;
-  stripe_customer_id?: string;
+  lemonsqueezy_subscription_id?: string;
+  lemonsqueezy_customer_id?: string;
   current_period_start: Date;
   current_period_end: Date;
   trial_start?: Date;
@@ -99,7 +99,7 @@ export interface Invoice {
   id: string;
   user_id: string;
   subscription_id: string;
-  stripe_invoice_id: string;
+  lemonsqueezy_invoice_id: string;
   amount_due: number;
   amount_paid: number;
   currency: string;
@@ -139,19 +139,19 @@ export interface CancellationFeedback {
   would_recommend: boolean;
 }
 
-// Stripe-specific types
-export interface StripeCheckoutSession {
+// LemonSqueezy-specific types
+export interface LemonSqueezyCheckoutSession {
   id: string;
   url: string;
   customer_email?: string;
-  success_url: string;
-  cancel_url: string;
+  success_url?: string;
+  cancel_url?: string;
 }
 
-export interface StripePortalSession {
+export interface LemonSqueezyPortalSession {
   id: string;
   url: string;
-  return_url: string;
+  return_url?: string;
 }
 
 // Subscription management types
@@ -162,14 +162,14 @@ export interface SubscriptionContextType {
   invoices: Invoice[];
   loading: boolean;
   error: string | null;
-  
+
   // Actions
-  upgradeSubscription: (plan_id: string) => Promise<StripeCheckoutSession>;
+  upgradeSubscription: (plan_id: string) => Promise<LemonSqueezyCheckoutSession>;
   downgradeSubscription: (plan_id: string) => Promise<void>;
   cancelSubscription: (feedback?: CancellationFeedback) => Promise<void>;
   reactivateSubscription: () => Promise<void>;
   updatePaymentMethod: (payment_method_id: string) => Promise<void>;
-  createPortalSession: () => Promise<StripePortalSession>;
+  createPortalSession: () => Promise<LemonSqueezyPortalSession>;
   refreshUsage: () => Promise<void>;
   getInvoices: () => Promise<Invoice[]>;
 }
