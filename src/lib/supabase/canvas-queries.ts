@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import type {
   Board,
   CanvasNode,
@@ -23,7 +24,7 @@ import type {
  * Get all boards for a user
  */
 export async function getUserBoards(userId: string): Promise<Board[]> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('boards')
@@ -36,14 +37,14 @@ export async function getUserBoards(userId: string): Promise<Board[]> {
     throw new Error('Failed to fetch boards');
   }
 
-  return data || [];
+  return (data as unknown as Board[]) || [];
 }
 
 /**
  * Get a single board by ID
  */
 export async function getBoard(boardId: string): Promise<Board | null> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('boards')
@@ -59,7 +60,7 @@ export async function getBoard(boardId: string): Promise<Board | null> {
     throw new Error('Failed to fetch board');
   }
 
-  return data;
+  return data as unknown as Board;
 }
 
 /**
@@ -69,7 +70,7 @@ export async function createBoard(
   userId: string,
   input: CreateBoardInput
 ): Promise<Board> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('boards')
@@ -89,10 +90,15 @@ export async function createBoard(
 
   if (error) {
     console.error('Error creating board:', error);
-    throw new Error('Failed to create board');
+    console.error('Supabase error details:', JSON.stringify(error, null, 2));
+    throw new Error(`Failed to create board: ${error.message || error.code || 'Unknown error'}`);
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to create board: No data returned');
+  }
+
+  return data as unknown as Board;
 }
 
 /**
@@ -102,7 +108,7 @@ export async function updateBoard(
   boardId: string,
   updates: UpdateBoardInput
 ): Promise<Board> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const updateData: Record<string, unknown> = {};
 
@@ -123,14 +129,18 @@ export async function updateBoard(
     throw new Error('Failed to update board');
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to update board: No data returned');
+  }
+
+  return data as unknown as Board;
 }
 
 /**
  * Delete a board
  */
 export async function deleteBoard(boardId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { error } = await supabase.from('boards').delete().eq('id', boardId);
 
@@ -148,7 +158,7 @@ export async function deleteBoard(boardId: string): Promise<void> {
  * Get all nodes for a board
  */
 export async function getBoardNodes(boardId: string): Promise<CanvasNode[]> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('nodes')
@@ -161,14 +171,14 @@ export async function getBoardNodes(boardId: string): Promise<CanvasNode[]> {
     throw new Error('Failed to fetch nodes');
   }
 
-  return data || [];
+  return (data as unknown as CanvasNode[]) || [];
 }
 
 /**
  * Get a single node by ID
  */
 export async function getNode(nodeId: string): Promise<CanvasNode | null> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('nodes')
@@ -184,14 +194,14 @@ export async function getNode(nodeId: string): Promise<CanvasNode | null> {
     throw new Error('Failed to fetch node');
   }
 
-  return data;
+  return data as unknown as CanvasNode;
 }
 
 /**
  * Create a new node
  */
 export async function createNode(input: CreateNodeInput): Promise<CanvasNode> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('nodes')
@@ -217,7 +227,11 @@ export async function createNode(input: CreateNodeInput): Promise<CanvasNode> {
     throw new Error('Failed to create node');
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to create node: No data returned');
+  }
+
+  return data as unknown as CanvasNode;
 }
 
 /**
@@ -227,7 +241,7 @@ export async function updateNode(
   nodeId: string,
   updates: UpdateNodeInput
 ): Promise<CanvasNode> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const updateData: Record<string, unknown> = {};
 
@@ -250,14 +264,18 @@ export async function updateNode(
     throw new Error('Failed to update node');
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to update node: No data returned');
+  }
+
+  return data as unknown as CanvasNode;
 }
 
 /**
  * Delete a node
  */
 export async function deleteNode(nodeId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { error } = await supabase.from('nodes').delete().eq('id', nodeId);
 
@@ -273,7 +291,7 @@ export async function deleteNode(nodeId: string): Promise<void> {
 export async function updateNodePositions(
   updates: Array<{ id: string; position: { x: number; y: number } }>
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   // Use Promise.all for parallel updates
   const promises = updates.map(({ id, position }) =>
@@ -297,7 +315,7 @@ export async function updateNodePositions(
  * Get all edges for a board
  */
 export async function getBoardEdges(boardId: string): Promise<CanvasEdge[]> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('edges')
@@ -310,14 +328,14 @@ export async function getBoardEdges(boardId: string): Promise<CanvasEdge[]> {
     throw new Error('Failed to fetch edges');
   }
 
-  return data || [];
+  return (data as unknown as CanvasEdge[]) || [];
 }
 
 /**
  * Create a new edge
  */
 export async function createEdge(input: CreateEdgeInput): Promise<CanvasEdge> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('edges')
@@ -340,14 +358,18 @@ export async function createEdge(input: CreateEdgeInput): Promise<CanvasEdge> {
     throw new Error('Failed to create edge');
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to create edge: No data returned');
+  }
+
+  return data as unknown as CanvasEdge;
 }
 
 /**
  * Delete an edge
  */
 export async function deleteEdge(edgeId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { error } = await supabase.from('edges').delete().eq('id', edgeId);
 
@@ -362,7 +384,7 @@ export async function deleteEdge(edgeId: string): Promise<void> {
  * Used when deleting a node to clean up its connections
  */
 export async function deleteNodeEdges(nodeId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { error } = await supabase
     .from('edges')

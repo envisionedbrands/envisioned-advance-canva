@@ -14,6 +14,7 @@ export default function BoardPage({
   const [nodes, setNodes] = useState<CanvasNode[]>([]);
   const [edges, setEdges] = useState<CanvasEdge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBoard();
@@ -24,10 +25,18 @@ export default function BoardPage({
     try {
       // Fetch board details
       const boardResponse = await fetch(`/api/boards/${boardId}`);
-      if (boardResponse.ok) {
-        const boardData = await boardResponse.json();
-        setBoard(boardData.board);
+
+      if (!boardResponse.ok) {
+        const errorData = await boardResponse.json();
+        console.error('Board fetch error:', errorData);
+        setError(errorData.error || `Failed to fetch board (${boardResponse.status})`);
+        setLoading(false);
+        return;
       }
+
+      const boardData = await boardResponse.json();
+      console.log('Board data received:', boardData);
+      setBoard(boardData.board);
 
       // Fetch nodes
       const nodesResponse = await fetch(`/api/boards/${boardId}/nodes`);
@@ -41,6 +50,7 @@ export default function BoardPage({
       setEdges([]);
     } catch (error) {
       console.error('Error fetching board:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -66,6 +76,12 @@ export default function BoardPage({
             The board you&apos;re looking for doesn&apos;t exist or you don&apos;t have access
             to it.
           </p>
+          {error && (
+            <div className="mt-4 rounded-lg border border-destructive bg-destructive/10 p-4">
+              <p className="text-sm font-medium text-destructive">{error}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Check browser console for details</p>
+            </div>
+          )}
         </div>
       </div>
     );

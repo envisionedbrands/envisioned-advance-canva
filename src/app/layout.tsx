@@ -59,11 +59,8 @@ export default function RootLayout({
         >
           <AuthProvider>
             <NavigationProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
+              {/* No header/footer here - each route group handles its own layout */}
+              {children}
             </NavigationProvider>
           </AuthProvider>
         </ThemeProvider>

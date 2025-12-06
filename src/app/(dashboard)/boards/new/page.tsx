@@ -12,6 +12,7 @@ export default function NewBoardPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +22,7 @@ export default function NewBoardPage() {
     }
 
     setCreating(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/boards', {
@@ -38,11 +40,13 @@ export default function NewBoardPage() {
         const data = await response.json();
         router.push(`/boards/${data.board.id}`);
       } else {
-        console.error('Failed to create board');
+        const data = await response.json();
+        setError(data.error || 'Failed to create board');
         setCreating(false);
       }
     } catch (error) {
       console.error('Error creating board:', error);
+      setError('Network error. Please check console for details.');
       setCreating(false);
     }
   };
@@ -65,6 +69,13 @@ export default function NewBoardPage() {
             Start a new canvas workspace for your content strategy
           </p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 rounded-lg border border-destructive bg-destructive/10 p-4">
+            <p className="text-sm font-medium text-destructive">{error}</p>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleCreate} className="space-y-6">
