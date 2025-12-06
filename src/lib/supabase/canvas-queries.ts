@@ -89,7 +89,8 @@ export async function createBoard(
 
   if (error) {
     console.error('Error creating board:', error);
-    throw new Error('Failed to create board');
+    console.error('Supabase error details:', JSON.stringify(error, null, 2));
+    throw new Error(`Failed to create board: ${error.message || error.code || 'Unknown error'}`);
   }
 
   return data;

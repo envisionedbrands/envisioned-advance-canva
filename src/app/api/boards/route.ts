@@ -58,8 +58,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ board }, { status: 201 });
   } catch (error) {
     console.error('Error creating board:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create board';
     return NextResponse.json(
-      { error: 'Failed to create board' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
