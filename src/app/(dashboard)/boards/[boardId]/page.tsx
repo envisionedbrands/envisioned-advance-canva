@@ -45,9 +45,12 @@ export default function BoardPage({
         setNodes(nodesData.nodes || []);
       }
 
-      // Fetch edges (when we implement the API)
-      // For now, start with empty edges
-      setEdges([]);
+      // Fetch edges
+      const edgesResponse = await fetch(`/api/boards/${boardId}/edges`);
+      if (edgesResponse.ok) {
+        const edgesData = await edgesResponse.json();
+        setEdges(edgesData.edges || []);
+      }
     } catch (error) {
       console.error('Error fetching board:', error);
       setError(error instanceof Error ? error.message : 'Unknown error occurred');

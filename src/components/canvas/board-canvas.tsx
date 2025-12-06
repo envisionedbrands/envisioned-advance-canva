@@ -109,19 +109,66 @@ function BoardCanvasInner({
     [board.id]
   );
 
-  const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
-    setEdges((eds) => applyEdgeChanges(changes, eds));
-  }, []);
+  const handleEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      setEdges((eds) => applyEdgeChanges(changes, eds));
+
+      // Handle edge deletion
+      const removedEdges = changes.filter((change) => change.type === 'remove');
+      if (removedEdges.length > 0) {
+        removedEdges.forEach((change) => {
+          if ('id' in change) {
+            fetch(`/api/boards/${board.id}/edges/${change.id}`, {
+              method: 'DELETE',
+            }).catch(console.error);
+          }
+        });
+      }
+    },
+    [board.id]
+  );
 
   const handleConnect = useCallback(
-    (connection: Connection) => {
+    async (connection: Connection) => {
+      if (!connection.source || !connection.target) return;
+
+      // Optimistically add edge to UI
       const newEdge = addEdge(connection, edges);
       setEdges(newEdge);
 
-      // TODO: Create edge in backend
-      // For now, edges are ephemeral and not persisted
+      // Persist to backend
+      try {
+        const response = await fetch(`/api/boards/${board.id}/edges`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source: connection.source,
+            target: connection.target,
+          }),
+        });
+
+        if (!response.ok) {
+          console.error('Failed to create edge');
+          // Revert optimistic update
+          setEdges((eds) =>
+            eds.filter(
+              (e) =>
+                !(e.source === connection.source && e.target === connection.target)
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Error creating edge:', error);
+        // Revert optimistic update
+        setEdges((eds) =>
+          eds.filter(
+            (e) =>
+              !(e.source === connection.source && e.target === connection.target)
+          )
+        );
+      }
     },
-    [edges]
+    [board.id, edges]
   );
 
   const handleAddNode = useCallback(
