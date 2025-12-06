@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import type {
   Board,
   CanvasNode,
@@ -69,7 +70,7 @@ export async function createBoard(
   userId: string,
   input: CreateBoardInput
 ): Promise<Board> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('boards')
@@ -103,7 +104,7 @@ export async function updateBoard(
   boardId: string,
   updates: UpdateBoardInput
 ): Promise<Board> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const updateData: Record<string, unknown> = {};
 
@@ -131,7 +132,7 @@ export async function updateBoard(
  * Delete a board
  */
 export async function deleteBoard(boardId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { error } = await supabase.from('boards').delete().eq('id', boardId);
 
@@ -192,7 +193,7 @@ export async function getNode(nodeId: string): Promise<CanvasNode | null> {
  * Create a new node
  */
 export async function createNode(input: CreateNodeInput): Promise<CanvasNode> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('nodes')
@@ -228,7 +229,7 @@ export async function updateNode(
   nodeId: string,
   updates: UpdateNodeInput
 ): Promise<CanvasNode> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const updateData: Record<string, unknown> = {};
 
@@ -258,7 +259,7 @@ export async function updateNode(
  * Delete a node
  */
 export async function deleteNode(nodeId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { error } = await supabase.from('nodes').delete().eq('id', nodeId);
 
@@ -274,7 +275,7 @@ export async function deleteNode(nodeId: string): Promise<void> {
 export async function updateNodePositions(
   updates: Array<{ id: string; position: { x: number; y: number } }>
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   // Use Promise.all for parallel updates
   const promises = updates.map(({ id, position }) =>
@@ -318,7 +319,7 @@ export async function getBoardEdges(boardId: string): Promise<CanvasEdge[]> {
  * Create a new edge
  */
 export async function createEdge(input: CreateEdgeInput): Promise<CanvasEdge> {
-  const supabase = await createClient();
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from('edges')
